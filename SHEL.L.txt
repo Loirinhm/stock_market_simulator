@@ -1,0 +1,5 @@
+SHEL.L
+Shell plc
+GBP
+2350.00
+5.04
