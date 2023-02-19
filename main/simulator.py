@@ -32,7 +32,7 @@ listUsers =[] #list with the users
 listStocks = [] #list with the stocks
 
 def transaction(buyRequest, sellRequest):
-    global listSells, listUsers, listStocks, listUsers
+    global listSells, listBuys, listUsers, listStocks, listUsers
 
     if sellRequest.price <= buyRequest.price and sellRequest.quantity == buyRequest.quantity:
         buyingUser = [user for user in listUsers if buyRequest.id == user.id] #saber o utilizador que fez o pedido de compra
@@ -55,11 +55,16 @@ def transaction(buyRequest, sellRequest):
         sellingUser.quantity[index] -= sellRequest.quantity
         sellingUser.valueSpend[index] -= (sellRequest.quantity * sellRequest.price)
         if sellingUser.quantity[index] == 0:
-            sellingUser.stocks.remove(sellRequest.stock)
-            
+            del sellingUser.stocks[index]
+            del sellingUser.quantity[index]
+            del sellingUser.valueSpend[index]
+        
+        updateUsers()
+        updateStocks()
+
 
 def simulator():
-    global listaCompras, listaVendas, listaUtilizadores, listaTitulos, europa, america
+    global listSells, listBuys, listUsers, listStocks, listUsers, europe, america
 
     novaIorque = pytz.timezone("America/New_York")
     relogioNovaIorque = datetime.now(novaIorque).time() #para definir o horario da bolsa americana
@@ -67,156 +72,62 @@ def simulator():
     londres = pytz.timezone("Europe/London")
     relogioLondres = datetime.now(londres).time() #para definir o horario da bolsa europeia
 
-    if not listaCompras: #se a tabela listaCompras nao estiver vazia
+    if not listBuys: #se a tabela listaCompras nao estiver vazia
         pass
     else:
-        for pedidoVenda in listaVendas: #iniciar com o pedido de venda
-            if pedidoVenda.quantidade == 0:
+        for sellRequest in listSells: #iniciar com o pedido de venda
+            if sellRequest.quantity == 0:
                 continue
-            elif pedidoVenda.titulo in america: 
+            elif sellRequest.stock in america: 
                 if not aberturaAmerica < relogioNovaIorque < fechoAmerica: #se a bolsa americana estiver fechada nao ha transacao para os titulos americanos
                     continue
                 else:
-                    for pedidoCompra in listaCompras:
-                        if pedidoCompra.quantidade == 0:
+                    for buyRequest in listBuys:
+                        if buyRequest.quantity == 0:
                             continue
-                        elif pedidoVenda.titulo == pedidoCompra.titulo: #se os titulos coinci
-                            if pedidoVenda.preco <= pedidoCompra.preco and pedidoVenda.quantidade == pedidoCompra.quantidade:
-                                utilizadorCompraL = [utilizador for utilizador in listaUtilizadores if pedidoCompra.id == utilizador.id] #saber o utilizador que fez o pedido de compra
-                                utilizadorCompra = utilizadorCompraL[0]
-                                utilizadorCompra.saldo = float(utilizadorCompra.saldo) - (float(pedidoCompra.preco) * int(pedidoCompra.quantidade)) # atualizar o saldo do utilizador
-                                if pedidoCompra.titulo in utilizadorCompra.titulos: #procurar na lista de titulos do utilizador o tilulo da transacao
-                                    #se o titulo existir, fazer a atualizacao dos dados
-                                    indice = utilizadorCompra.titulos.index(pedidoCompra.titulo) #saber o indice do titulo na lista
-                                    utilizadorCompra.quantidade[indice] += pedidoCompra.quantidade #actualizar a quantidade no portefolio do utilizador
-                                    utilizadorCompra.valorGasto[indice] += (pedidoCompra.preco * pedidoCompra.quantidade) #actualizar no portefolio o valor gasto neste titulo
-                                else:
-                                    utilizadorCompra.titulos.append(pedidoCompra.titulo)
-                                    utilizadorCompra.quantidade.append(pedidoCompra.quantidade)
-                                    utilizadorCompra.valorGasto.append((pedidoCompra.preco * pedidoCompra.quantidade))
-                
-                                utilizadorVendaL = [utilizador for utilizador in listaUtilizadores if pedidoVenda.id == utilizador.id] #saber que utilizador fez o pedido de venda
-                                utilizadorVenda = utilizadorVendaL[0]
-                                utilizadorVenda.saldo = float(utilizadorCompra.saldo) + (float(pedidoCompra.preco) * int(pedidoCompra.quantidade))
-                                if pedidoVenda.titulo in utilizadorVenda.titulos: #procurar o titulo na lista de titulos do respetivo utilizador
-                                    indice = utilizadorVenda.titulos.index(pedidoVenda.titulo)
-                                    utilizadorVenda.quantidade[indice] -= pedidoVenda.quantidade
-                                    utilizadorVenda.valorGasto[indice] -= (pedidoVenda.quantidade * pedidoVenda.preco)
-                                pedidoCompra.quantidade = 0
-                                pedidoVenda.quantidade = 0
-                                atualizarUtilizadores()
-                                atualizarTitulos()
-                                atualizarPedidosVenda()
-                                atualizarPedidosCompra()
-                            elif pedidoVenda.preco <= pedidoCompra.preco and pedidoVenda.quantidade != pedidoCompra.quantidade:
-                                if pedidoVenda.quantidade >= pedidoCompra.quantidade:
-                                    pedidoVenda.quantidade = pedidoVenda.quantidade - pedidoCompra.quantidade
-                                    pedidoCompra.quantidade = 0
-                                else:
-                                    pedidoCompra.quantidade = pedidoCompra.quantidade - pedidoVenda.quantidade
-                                    pedidoVenda.quantidade = 0
-                                utilizadorCompraL = [utilizador for utilizador in listaUtilizadores if pedidoCompra.id == utilizador.id] #saber o utilizador que fez o pedido de compra
-                                utilizadorCompra = utilizadorCompraL[0]
-                                utilizadorCompra.saldo = float(utilizadorCompra.saldo) - (float(pedidoCompra.preco) * int(pedidoCompra.quantidade)) # atualizar o saldo do utilizador
-                                if pedidoCompra.titulo in utilizadorCompra.titulos: #procurar na lista de titulos do utilizador o tilulo da transacao
-                                    #se o titulo existir, fazer a atualizacao dos dados
-                                    indice = utilizadorCompra.titulos.index(pedidoCompra.titulo) #saber o indice do titulo na lista
-                                    utilizadorCompra.quantidade[indice] += pedidoCompra.quantidade #actualizar a quantidade no portefolio do utilizador
-                                    utilizadorCompra.valorGasto[indice] += (pedidoCompra.preco * pedidoCompra.quantidade) #actualizar no portefolio o valor gasto neste titulo
-                                else:
-                                    utilizadorCompra.titulos.append(pedidoCompra.titulo)
-                                    utilizadorCompra.quantidade.append(pedidoCompra.quantidade)
-                                    utilizadorCompra.valorGasto.append((pedidoCompra.preco * pedidoCompra.quantidade))
-                
-                                utilizadorVendaL = [utilizador for utilizador in listaUtilizadores if pedidoVenda.id == utilizador.id] #saber que utilizador fez o pedido de venda
-                                utilizadorVenda = utilizadorVendaL[0]
-                                utilizadorVenda.saldo = float(utilizadorCompra.saldo) + (float(pedidoCompra.preco) * int(pedidoCompra.quantidade))
-                                if pedidoVenda.titulo in utilizadorVenda.titulos: #procurar o titulo na lista de titulos do respetivo utilizador
-                                    indice = utilizadorVenda.titulos.index(pedidoVenda.titulo)
-                                    utilizadorVenda.quantidade[indice] -= pedidoVenda.quantidade
-                                    utilizadorVenda.valorGasto[indice] -= (pedidoVenda.quantidade * pedidoVenda.preco)
-                                atualizarUtilizadores()
-                                atualizarTitulos()
-                                atualizarPedidosVenda()
-                                atualizarPedidosCompra()
-                            # tituloL = [titulo for titulo in listaTitulos if titulo == pedidoVenda.titulo]
-                            # titulo = tituloL[0]
-                            # titulo.precoActual = pedidoVenda.preco #actualizar o precoActual do titulo
+                        elif sellRequest.stock == buyRequest.stock and sellRequest.price <= buyRequest.price: #se os titulos coinci
+                            transaction(buyRequest, sellRequest)
+                            if sellRequest.quantity == buyRequest.quantity:
+                                buyRequest.quantity = 0
+                                sellRequest.quantity = 0
                             else:
-                                continue
+                                if sellRequest.quantity >= buyRequest.quantity:
+                                    sellRequest.quantity -= buyRequest.quantity
+                                    buyRequest.quantity = 0
+                                else:
+                                    buyRequest.quantity -= sellRequest.quantity
+                                    sellRequest.quantity = 0
+                            stock = [stock for stock in listStocks if stock.symbol == buyRequest.stock]
+                            stock = stock[0]
+                            stock.lastPrice = buyRequest.price #actualizar o precoActual do titulo
+                            updateBuyRequests()
+                            updateSellRequests
                         else:
                             continue
-            elif pedidoVenda.titulo in europa:
-                if not aberturaEuropa < relogioLondres < fechoEuropa: #se a bolsa europeia estiver fechada nao ha transacao para os titulos europeus
+            elif sellRequest.stock in europe: 
+                if not aberturaAmerica < relogioNovaIorque < fechoAmerica: #se a bolsa americana estiver fechada nao ha transacao para os titulos americanos
                     continue
                 else:
-                    for pedidoCompra in listaCompras:
-                        if pedidoCompra.quantidade == 0:
+                    for buyRequest in listBuys:
+                        if buyRequest.quantity == 0:
                             continue
-                        elif pedidoVenda.titulo == pedidoCompra.titulo: #se os titulos coinci
-                            if pedidoVenda.preco <= pedidoCompra.preco and pedidoVenda.quantidade == pedidoCompra.quantidade:
-                                utilizadorCompraL = [utilizador for utilizador in listaUtilizadores if pedidoCompra.id == utilizador.id] #saber o utilizador que fez o pedido de compra
-                                utilizadorCompra = utilizadorCompraL[0]
-                                utilizadorCompra.saldo = float(utilizadorCompra.saldo) - (float(pedidoCompra.preco) * int(pedidoCompra.quantidade)) # atualizar o saldo do utilizador
-                                if pedidoCompra.titulo in utilizadorCompra.titulos: #procurar na lista de titulos do utilizador o tilulo da transacao
-                                    #se o titulo existir, fazer a atualizacao dos dados
-                                    indice = utilizadorCompra.titulos.index(pedidoCompra.titulo) #saber o indice do titulo na lista
-                                    utilizadorCompra.quantidade[indice] += pedidoCompra.quantidade #actualizar a quantidade no portefolio do utilizador
-                                    utilizadorCompra.valorGasto[indice] += (pedidoCompra.preco * pedidoCompra.quantidade) #actualizar no portefolio o valor gasto neste titulo
-                                else:
-                                    utilizadorCompra.titulos.append(pedidoCompra.titulo)
-                                    utilizadorCompra.quantidade.append(pedidoCompra.quantidade)
-                                    utilizadorCompra.valorGasto.append((pedidoCompra.preco * pedidoCompra.quantidade))
-                
-                                utilizadorVendaL = [utilizador for utilizador in listaUtilizadores if pedidoVenda.id == utilizador.id] #saber que utilizador fez o pedido de venda
-                                utilizadorVenda = utilizadorVendaL[0]
-                                utilizadorVenda.saldo = float(utilizadorCompra.saldo) + (float(pedidoCompra.preco) * int(pedidoCompra.quantidade))
-                                if pedidoVenda.titulo in utilizadorVenda.titulos: #procurar o titulo na lista de titulos do respetivo utilizador
-                                    indice = utilizadorVenda.titulos.index(pedidoVenda.titulo)
-                                    utilizadorVenda.quantidade[indice] -= pedidoVenda.quantidade
-                                    utilizadorVenda.valorGasto[indice] -= (pedidoVenda.quantidade * pedidoVenda.preco)
-                                pedidoCompra.quantidade = 0
-                                pedidoVenda.quantidade = 0
-                                atualizarUtilizadores()
-                                atualizarTitulos()
-                                atualizarPedidosVenda()
-                                atualizarPedidosCompra()
-                            elif pedidoVenda.preco <= pedidoCompra.preco and pedidoVenda.quantidade != pedidoCompra.quantidade:
-                                if pedidoVenda.quantidade >= pedidoCompra.quantidade:
-                                    pedidoVenda.quantidade = pedidoVenda.quantidade - pedidoCompra.quantidade
-                                    pedidoCompra.quantidade = 0
-                                else:
-                                    pedidoCompra.quantidade = pedidoCompra.quantidade - pedidoVenda.quantidade
-                                    pedidoVenda.quantidade = 0
-                                utilizadorCompraL = [utilizador for utilizador in listaUtilizadores if pedidoCompra.id == utilizador.id] #saber o utilizador que fez o pedido de compra
-                                utilizadorCompra = utilizadorCompraL[0]
-                                utilizadorCompra.saldo = float(utilizadorCompra.saldo) - (float(pedidoCompra.preco) * int(pedidoCompra.quantidade)) # atualizar o saldo do utilizador
-                                if pedidoCompra.titulo in utilizadorCompra.titulos: #procurar na lista de titulos do utilizador o tilulo da transacao
-                                    #se o titulo existir, fazer a atualizacao dos dados
-                                    indice = utilizadorCompra.titulos.index(pedidoCompra.titulo) #saber o indice do titulo na lista
-                                    utilizadorCompra.quantidade[indice] += pedidoCompra.quantidade #actualizar a quantidade no portefolio do utilizador
-                                    utilizadorCompra.valorGasto[indice] += (pedidoCompra.preco * pedidoCompra.quantidade) #actualizar no portefolio o valor gasto neste titulo
-                                else:
-                                    utilizadorCompra.titulos.append(pedidoCompra.titulo)
-                                    utilizadorCompra.quantidade.append(pedidoCompra.quantidade)
-                                    utilizadorCompra.valorGasto.append((pedidoCompra.preco * pedidoCompra.quantidade))
-                
-                                utilizadorVendaL = [utilizador for utilizador in listaUtilizadores if pedidoVenda.id == utilizador.id] #saber que utilizador fez o pedido de venda
-                                utilizadorVenda = utilizadorVendaL[0]
-                                utilizadorVenda.saldo = float(utilizadorCompra.saldo) + (float(pedidoCompra.preco) * int(pedidoCompra.quantidade))
-                                if pedidoVenda.titulo in utilizadorVenda.titulos: #procurar o titulo na lista de titulos do respetivo utilizador
-                                    indice = utilizadorVenda.titulos.index(pedidoVenda.titulo)
-                                    utilizadorVenda.quantidade[indice] -= pedidoVenda.quantidade
-                                    utilizadorVenda.valorGasto[indice] -= (pedidoVenda.quantidade * pedidoVenda.preco)
-                                atualizarUtilizadores()
-                                atualizarTitulos()
-                                atualizarPedidosVenda()
-                                atualizarPedidosCompra()
-                            # tituloL = [titulo for titulo in listaTitulos if titulo == pedidoVenda.titulo]
-                            # titulo = tituloL[0]
-                            # titulo.precoActual = pedidoVenda.preco #actualizar o precoActual do titulo
+                        elif sellRequest.stock == buyRequest.stock and sellRequest.price <= buyRequest.price: #se os titulos coinci
+                            transaction(buyRequest, sellRequest)
+                            if sellRequest.quantity == buyRequest.quantity:
+                                buyRequest.quantity = 0
+                                sellRequest.quantity = 0
                             else:
-                                continue
+                                if sellRequest.quantity >= buyRequest.quantity:
+                                    sellRequest.quantity -= buyRequest.quantity
+                                    buyRequest.quantity = 0
+                                else:
+                                    buyRequest.quantity -= sellRequest.quantity
+                                    sellRequest.quantity = 0
+                            stock = [stock for stock in listStocks if stock.symbol == buyRequest.stock]
+                            stock = stock[0]
+                            stock.lastPrice = buyRequest.price #actualizar o precoActual do titulo
+                            updateBuyRequests()
+                            updateSellRequests()
                         else:
                             continue
 

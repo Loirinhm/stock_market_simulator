@@ -52,7 +52,7 @@ def loadRequest():
         listSells.append(request)
         id += 1
 
-def atualizarPedidosCompra():
+def updateBuyRequests():
     global listaCompras
     for pedido in listaCompras:
         id = 1
@@ -61,7 +61,7 @@ def atualizarPedidosCompra():
             pickle.dump(pedido, ficheiro)
         id += 1
 
-def atualizarPedidosVenda():
+def updateSellRequests():
     global listaVendas
     for pedido in listaVendas:
         id = 1
