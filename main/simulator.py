@@ -11,13 +11,11 @@ from stocks import *
 from users import *
 from buysellrequests import *
 
-ficheiro = open('pedidoCompraID' + '.txt', 'r')
-pedidoCompraId = ficheiro.readline()
-ficheiro.close()
+with open('pedidoCompraID' + '.txt', 'r') as file:
+    buyRequestId = file.readline()
 
-ficheiro = open('pedidoVendaID' + '.txt', 'r')
-pedidoVendaId = ficheiro.readline()
-ficheiro.close()
+with open('pedidoVendaID' + '.txt', 'r') as file:
+    sellRequestId = file.readline()
 
 europe = ['NESN.SW', 'ASML.AS', 'ROG.SW', 'AZN.L', 'SHEL.L'] #lista de titulos de empresas europeias
 america = ['AAPL', 'MSFT', 'AMZN', 'TSLA', 'GOOGL'] #lista de titulos de empresas americanas
@@ -28,13 +26,37 @@ fechoAmerica = time(22, 0, 0)
 aberturaEuropa = time(8, 0, 0)
 fechoEuropa = time(22, 30, 00)
 
-listSells = [] #lista dos pedidos de venda
-listBuys = [] #lista dos pedidos de compra
-listUsers =[]
-listStocks = []
+listSells = [] #list with the sell request
+listBuys = [] #list with the buy request
+listUsers =[] #list with the users
+listStocks = [] #list with the stocks
 
-def transaction():
-    pass
+def transaction(buyRequest, sellRequest):
+    global listSells, listUsers, listStocks, listUsers
+
+    if sellRequest.price <= buyRequest.price and sellRequest.quantity == buyRequest.quantity:
+        buyingUser = [user for user in listUsers if buyRequest.id == user.id] #saber o utilizador que fez o pedido de compra
+        buyingUser = buyingUser[0]
+        buyingUser.saldo = float(buyingUser.balance) - (float(buyRequest.price) * int(buyRequest.quantity)) # atualizar o saldo do utilizador
+        if buyRequest.stock in buyingUser.stocks: #procurar na lista de titulos do utilizador o tilulo da transacao
+            #se o titulo existir, fazer a atualizacao dos dados
+            index = buyingUser.stocks.index(buyRequest.stock) #saber o indice do titulo na lista
+            buyingUser.quantity[index] += buyRequest.quantity #actualizar a quantidade no portefolio do utilizador
+            buyingUser.valueSpend[index] += (buyRequest.price * buyRequest.quantity) #actualizar no portefolio o valor gasto neste titulo
+        else:
+            buyingUser.stocks.append(buyRequest.stock)
+            buyingUser.quantity.append(buyRequest.quantity)
+            buyingUser.valueSpend.append((buyRequest.price * buyRequest.quantity))
+                
+        sellingUser = [user for user in listUsers if sellRequest.id == user.id] #saber que utilizador fez o pedido de venda
+        sellingUser = sellingUser[0]
+        sellingUser.balance = float(sellingUser.balance) + (float(buyRequest.price) * int(buyRequest.quantity))
+        index = sellingUser.stocks.index(sellRequest.stock)
+        sellingUser.quantity[index] -= sellRequest.quantity
+        sellingUser.valueSpend[index] -= (sellRequest.quantity * sellRequest.price)
+        if sellingUser.quantity[index] == 0:
+            sellingUser.stocks.remove(sellRequest.stock)
+            
 
 def simulator():
     global listaCompras, listaVendas, listaUtilizadores, listaTitulos, europa, america

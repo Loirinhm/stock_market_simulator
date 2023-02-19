@@ -3,17 +3,17 @@ import pickle
 from simulator import *
 
 class User():
-    def __init__(self, id, name, balance, stocks=[], quantity=[], valueSpent=[]):
+    def __init__(self, id, name, balance, stocks=[], quantity=[], valueSpend=[]):
         self.id = id
         self.name = str(name)
         self.balance = float(balance)
         self.stocks = str(stocks)
         self.quantity = int(quantity)
-        self.valueSpent = float(valueSpent)
+        self.valueSpend = float(valueSpend)
     
     def paraLista(self): #criar uma lista com os valores do portefolio de forma a ser apresentado numa tabela
         lista = []
-        lista.append(('TÍTULOS', 'QUANTIDADE', 'VALOR GASTO'))
+        lista.append(('STOCK', 'QUANTTIY', 'VALUE SPEND'))
         for i in range(len(self.titulos)):
             lista.append((self.titulos[i], self.quantidade[i], self.valorGasto[i]))
         return lista
