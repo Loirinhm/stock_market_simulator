@@ -66,11 +66,11 @@ def transaction(buyRequest, sellRequest):
 def simulator():
     global listSells, listBuys, listUsers, listStocks, listUsers, europe, america
 
-    novaIorque = pytz.timezone("America/New_York")
-    relogioNovaIorque = datetime.now(novaIorque).time() #para definir o horario da bolsa americana
+    #novaIorque = pytz.timezone("America/New_York")
+    #relogioNovaIorque = datetime.now(novaIorque).time() #para definir o horario da bolsa americana
 
-    londres = pytz.timezone("Europe/London")
-    relogioLondres = datetime.now(londres).time() #para definir o horario da bolsa europeia
+    #londres = pytz.timezone("Europe/London")
+    #relogioLondres = datetime.now(londres).time() #para definir o horario da bolsa europeia
 
     if not listBuys: #se a tabela listaCompras nao estiver vazia
         pass

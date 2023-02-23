@@ -20,8 +20,8 @@ class User():
 
 def createUser(): #funcao para acrescentar utilizadores e guarda-los em formato pickle
     id += 1
-    name = input('Inserir nome de utilizador: ')
-    balance = input('Inserir saldo do utilitador: ')
+    name = input('Insert user name: ')
+    balance = input('Insert user balance: ')
     user = User(id, name, balance)
     userName = str('utilizador_') + str(user.id)
     with open(userName + '.pkl', 'wb') as file:

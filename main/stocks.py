@@ -2,7 +2,12 @@ from abc import ABC, abstractmethod
 from currency_converter import CurrencyConverter #para converter as diferentes moedas
 import pickle
 
-from simulator import *
+# from simulator import *
+
+europe = ['NESN.SW', 'ASML.AS', 'ROG.SW', 'AZN.L', 'SHEL.L'] #lista de titulos de empresas europeias
+america = ['AAPL', 'MSFT', 'AMZN', 'TSLA', 'GOOGL']
+
+listStocks = []
 
 class Stock(ABC):  #information about the stocks   
     def __init__(self, symbol, company, currency, lastPrice, peRacio):
@@ -12,7 +17,7 @@ class Stock(ABC):  #information about the stocks
         self.peRacio = float(peRacio)
 
     @abstractmethod
-    def convertCurrency(self, lastPrice):
+    def convertCurrency(self, value):
         pass
 
 class Europe(Stock): #stocks from Europe Markets
@@ -82,3 +87,7 @@ def loadStocks():
         with open(symbol + '.pkl', 'rb') as file:
             stock = pickle.load(file)
             listStocks.append(stock)
+
+# importEuropeStocks()
+# importAmericaStocks()
+# updateStocks()
